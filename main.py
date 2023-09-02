@@ -37,9 +37,18 @@ async def joined(ctx, member: discord.Member):
     """Says when a member joined."""
     await ctx.send(f'{member.name} joined {discord.utils.format_dt(member.joined_at)}')
 
+@bot.group()
+async def cool(ctx):
+    """Says if a user is cool.
+
+    In reality this just checks if a subcommand is being invoked.
+    """
+    if ctx.invoked_subcommand is None:
+        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')    
+
 @cool.command(name='bot')
 async def _bot(ctx):
     """Is the bot cool?"""
     await ctx.send('Yes, the bot is cool.')    
 
-bot.run("MTE0NDk2MDA4OTk1OTE5MDY2OA.G3lVyF.Ulj6D8bNTg9TJ-H4e3e2iCoulLllOblo0s98iA")
+bot.run("MTE0NDk2MDA4OTk1OTE5MDY2OA.Gq-cPR.1BNG-NRIJbMeiSSa4Z7a3R4tSpzVFaJR_29gls")
