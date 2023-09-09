@@ -1,4 +1,15 @@
+import os
+import random
 import discord
+from discord.ext import commands
+import requests
+
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='$', intents=intents)
+
 from discord.ext import commands
 
 intents = discord.Intents.default()
@@ -49,6 +60,62 @@ async def cool(ctx):
 @cool.command(name='bot')
 async def _bot(ctx):
     """Is the bot cool?"""
-    await ctx.send('Yes, the bot is cool.')    
+    await ctx.send('Yes, the bot is cool.')
 
-bot.run("MTE0NDk2MDA4OTk1OTE5MDY2OA.Gq-cPR.1BNG-NRIJbMeiSSa4Z7a3R4tSpzVFaJR_29gls")
+@bot.event
+async def on_ready():
+    print(f'Бот {bot.user} успешно запущен!')
+
+
+@bot.command()
+async def mem(ctx):
+    img_name = random.choice(os.listdir('photos'))
+    with open(f'photos/{img_name}', 'rb') as f:
+        # В переменную кладем файл, который преобразуется в файл библиотеки Discord!
+        picture = discord.File(f)
+   # Можем передавать файл как параметр!
+    await ctx.send(file=picture)
+
+def get_duck_image_url():    
+    url = 'https://random-d.uk/api/random'
+    res = requests.get(url)
+    data = res.json()
+    return data['url']
+
+
+@bot.command('duck')
+async def duck(ctx):
+    '''По команде duck вызывает функцию get_duck_image_url'''
+    image_url = get_duck_image_url()
+    await ctx.send(image_url)
+
+@bot.command()
+async def my_mem(ctx):
+    img_name = random.choice(os.listdir('photos'))
+    
+    if img_name == '5454be867af9b6db37cf7a83d50d7cb2':
+        await ctx.send("Here's my custom meme!")
+    else:
+        with open(f'photos/{img_name}', 'rb') as f:
+            picture = discord.File(f)
+        await ctx.send(file=picture)
+@bot.command()
+async def mem(ctx, category=None):
+    if category is None:
+       
+        img_name = random.choice(os.listdir('photos'))
+    else:
+       
+        category_dir = os.path.join('photos', category)
+        if os.path.exists(category_dir) and os.path.isdir(category_dir):
+            img_name = random.choice(os.listdir(category_dir))
+        else:
+            await ctx.send(f'Категория "{category}" не существует.')
+            return
+
+    with open(os.path.join('photos', category, img_name), 'rb') as f:
+        picture = discord.File(f)
+    await ctx.send(file=picture)
+
+
+bot.run("MTE0NDk2MDA4OTk1OTE5MDY2OA.GDhHYM.biqBl8M-doZgpj6YPFK858D_hHRVIo7pXNuTUI")
