@@ -1,121 +1,102 @@
-import os
-import random
-import discord
-from discord.ext import commands
-import requests
+# Импорт
+from flask import Flask, render_template
+
+# Создание объекта приложения Flask
+app = Flask(__name__)
+
+# Функция для расчета результатов
+def result_calculate(size, lights, device):
+    # Переменные для энергозатратности приборов
+    home_coef = 100
+    light_coef = 0.04
+    devices_coef = 5   
+    return size * home_coef + lights * light_coef + device * devices_coef 
+
+# Первая страница
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Вторая страница
+@app.route('/<size>')
+def lights(size):
+    return render_template('lights.html', size=size)
+
+# Третья страница
+@app.route('/<size>/<lights>')
+def electronics(size, lights):
+    return render_template('electronics.html', size=size, lights=lights)
+
+# Расчет
+@app.route('/<size>/<lights>/<device>')
+def end(size, lights, device):
+    result = result_calculate(int(size), int(lights), int(device))
+    return render_template('end.html', result=result)
+
+# Новый маршрут для экологичной сборки
+@app.route('/<size>/<lights>/our_eco_build')
+def our_eco_build(size, lights):
+    # Добавьте логику для страницы с экологичной сборкой здесь
+    return render_template('our_eco_build.html', size=size, lights=lights)
+
+# Запуск приложения в режиме отладки
+app.run(debug=True)
 
 
-intents = discord.Intents.default()
-intents.message_content = True
-
-bot = commands.Bot(command_prefix='$', intents=intents)
-
-from discord.ext import commands
-
-intents = discord.Intents.default()
-intents.message_content = True
-
-bot = commands.Bot(command_prefix='$', intents=intents)
-
-@bot.event
-async def on_ready():
-    print(f'We have logged in as {bot.user}')
-
-@bot.command()
-async def hello(ctx):
-    await ctx.send(f'Привет! Я бот {bot.user}!')
-
-@bot.command()
-async def bye(ctx):
-    await ctx.send(f'Пока :( {bot.user}!')    
-
-@bot.command()
-async def heh(ctx, count_heh = 5):
-    await ctx.send("he" * count_heh)
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
-
-@bot.command()
-async def add(ctx, left: int, right: int):
-    """Adds two numbers together."""
-    await ctx.send(left + right)
-
-@bot.command()
-async def joined(ctx, member: discord.Member):
-    """Says when a member joined."""
-    await ctx.send(f'{member.name} joined {discord.utils.format_dt(member.joined_at)}')
-
-@bot.group()
-async def cool(ctx):
-    """Says if a user is cool.
-
-    In reality this just checks if a subcommand is being invoked.
-    """
-    if ctx.invoked_subcommand is None:
-        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')    
-
-@cool.command(name='bot')
-async def _bot(ctx):
-    """Is the bot cool?"""
-    await ctx.send('Yes, the bot is cool.')
-
-@bot.event
-async def on_ready():
-    print(f'Бот {bot.user} успешно запущен!')
-
-
-@bot.command()
-async def mem(ctx):
-    img_name = random.choice(os.listdir('photos'))
-    with open(f'photos/{img_name}', 'rb') as f:
-        # В переменную кладем файл, который преобразуется в файл библиотеки Discord!
-        picture = discord.File(f)
-   # Можем передавать файл как параметр!
-    await ctx.send(file=picture)
-
-def get_duck_image_url():    
-    url = 'https://random-d.uk/api/random'
-    res = requests.get(url)
-    data = res.json()
-    return data['url']
-
-
-@bot.command('duck')
-async def duck(ctx):
-    '''По команде duck вызывает функцию get_duck_image_url'''
-    image_url = get_duck_image_url()
-    await ctx.send(image_url)
-
-@bot.command()
-async def my_mem(ctx):
-    img_name = random.choice(os.listdir('photos'))
-    
-    if img_name == '5454be867af9b6db37cf7a83d50d7cb2':
-        await ctx.send("Here's my custom meme!")
-    else:
-        with open(f'photos/{img_name}', 'rb') as f:
-            picture = discord.File(f)
-        await ctx.send(file=picture)
-@bot.command()
-async def mem(ctx, category=None):
-    if category is None:
-       
-        img_name = random.choice(os.listdir('photos'))
-    else:
-       
-        category_dir = os.path.join('photos', category)
-        if os.path.exists(category_dir) and os.path.isdir(category_dir):
-            img_name = random.choice(os.listdir(category_dir))
-        else:
-            await ctx.send(f'Категория "{category}" не существует.')
-            return
-
-    with open(os.path.join('photos', category, img_name), 'rb') as f:
-        picture = discord.File(f)
-    await ctx.send(file=picture)
-
-
-bot.run("MTE0NDk2MDA4OTk1OTE5MDY2OA.GDhHYM.biqBl8M-doZgpj6YPFK858D_hHRVIo7pXNuTUI")
+electronics.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="../static/css/style.css">
+  <title>Расчет энергоэффективности умного дома</title>
+</head>
+<body>
+  <header class="header">
+    <div class="header__text">
+      <h1>Расчитай энергоэффективность своего дома!</h1>
+      <p>Решите проблему излишнего электропотребления самостоятельно!</p>
+    </div>
+  </header>
+  <main>
+    {% block content %}
+    <h2 class="main__title">Выбери количество электрических приборов:</h2>
+    <ul class="list" id="list">
+      <!-- Задание №3 -->
+      <li class="list__item">
+        <a href="{{ lights + '/4' }}">
+          <img class="item__img" src="../static/img/battery.svg" alt="battery">
+          <span>3-5 прибора</span>
+        </a>
+      </li>
+      <li class="list__item">
+        <a href="{{ lights + '/7' }}">
+          <img class="item__img" src="../static/img/battery.svg" alt="battery">
+          <span>6-8 приборов</span>
+        </a>
+      </li>
+      <!-- Corrected button for 10 and more devices -->
+      <li class="list__item">
+        <a href="{{ lights + '/10' }}">
+          <img class="item__img" src="{{ url_for('static', filename='img/battery.svg') }}" alt="battery">
+          <span>10 и более</span>
+        </a>
+      </li>
+      <!-- New button for eco-friendly build -->
+      <li class="list__item">
+        <!-- Replace 'YOUR_IMAGE_URL' with the actual URL of your image -->
+        <a href="{{ lights + '/our_eco_build' }}">
+          <img class="item__img" src="https://c8.alamy.com/comp/2F9BK0X/recycling-symbol-reuse-eco-ecology-green-metallic-illustration-2F9BK0X.jpg" alt="eco_build_image">
+          <span>Наша экологичная сборка</span>
+        </a>
+      </li>
+    </ul>
+    {% endblock %}
+  </main>
+  <footer>
+    <!-- Your footer content goes here -->
+  </footer>
+</body>
+</html>
