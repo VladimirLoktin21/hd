@@ -1,3 +1,4 @@
+main.py
 # Импорт
 from flask import Flask, render_template
 
@@ -12,6 +13,25 @@ def result_calculate(size, lights, device):
     devices_coef = 5   
     return size * home_coef + lights * light_coef + device * devices_coef 
 
+# Добавленная функция для генерации элементов освещения
+def generate_light_items(size):
+    items = [
+        {"url": size + '/3', "img_src": "../static/img/light.svg", "alt": "Lightbulb", "text": "2-4 лампочки", "color": "green"},
+        {"url": size + '/7', "img_src": "../static/img/light.svg", "alt": "Lightbulb", "text": "4-6 лампочек", "color": "orange"},
+        {"url": size + '/10', "img_src": "../static/img/light.svg", "alt": "Lightbulb", "text": "8 и более", "color": "red"},
+        {"url": size + '/our_eco_build', "img_src": "https://c8.alamy.com/comp/2F9BK0X/recycling-symbol-reuse-eco-ecology-green-metallic-illustration-2F9BK0X.jpg", "alt": "Eco Build", "text": "Наша экологичная сборка", "color": "blue"}
+    ]
+
+    for item in items:
+        yield f'''
+            <li class="list__item" style="border-color: {item["color"]};">
+                <a href="{item["url"]}">
+                    <img class="item__img" src="{item["img_src"]}" alt="{item["alt"]}">
+                    <span style="color: {item["color"]}">{item["text"]}</span>
+                </a>
+            </li>
+        '''
+
 # Первая страница
 @app.route('/')
 def index():
@@ -20,7 +40,7 @@ def index():
 # Вторая страница
 @app.route('/<size>')
 def lights(size):
-    return render_template('lights.html', size=size)
+    return render_template('lights.html', size=size, generate_light_items=generate_light_items)
 
 # Третья страница
 @app.route('/<size>/<lights>')
@@ -41,6 +61,9 @@ def our_eco_build(size, lights):
 
 # Запуск приложения в режиме отладки
 app.run(debug=True)
+
+
+
 
 
 <!-- lights.html -->
@@ -89,7 +112,7 @@ app.run(debug=True)
       <!-- New button for eco-friendly build -->
       <li class="list__item">
         <a href="{{size + '/our_eco_build' }}">
-          <img class="item__img" src="YOUR_ECO_IMAGE_URL" alt="Eco Build">
+          <img class="item__img" src="https://avatars.mds.yandex.net/i?id=42294c3c23182ea2e3b19bb7a86c59b8-5234784-images-thumbs&n=13" alt="Eco Build">
           <span>Наша экологичная сборка</span>
         </a>
       </li>
@@ -101,4 +124,3 @@ app.run(debug=True)
   </footer>
 </body>
 </html>
-
