@@ -1,126 +1,85 @@
 main.py
-# Импорт
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
-# Создание объекта приложения Flask
 app = Flask(__name__)
 
-# Функция для расчета результатов
 def result_calculate(size, lights, device):
-    # Переменные для энергозатратности приборов
     home_coef = 100
     light_coef = 0.04
     devices_coef = 5   
     return size * home_coef + lights * light_coef + device * devices_coef 
 
-# Добавленная функция для генерации элементов освещения
-def generate_light_items(size):
-    items = [
-        {"url": size + '/3', "img_src": "../static/img/light.svg", "alt": "Lightbulb", "text": "2-4 лампочки", "color": "green"},
-        {"url": size + '/7', "img_src": "../static/img/light.svg", "alt": "Lightbulb", "text": "4-6 лампочек", "color": "orange"},
-        {"url": size + '/10', "img_src": "../static/img/light.svg", "alt": "Lightbulb", "text": "8 и более", "color": "red"},
-        {"url": size + '/our_eco_build', "img_src": "https://c8.alamy.com/comp/2F9BK0X/recycling-symbol-reuse-eco-ecology-green-metallic-illustration-2F9BK0X.jpg", "alt": "Eco Build", "text": "Наша экологичная сборка", "color": "blue"}
-    ]
-
-    for item in items:
-        yield f'''
-            <li class="list__item" style="border-color: {item["color"]};">
-                <a href="{item["url"]}">
-                    <img class="item__img" src="{item["img_src"]}" alt="{item["alt"]}">
-                    <span style="color: {item["color"]}">{item["text"]}</span>
-                </a>
-            </li>
-        '''
-
-# Первая страница
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Вторая страница
 @app.route('/<size>')
 def lights(size):
-    return render_template('lights.html', size=size, generate_light_items=generate_light_items)
+    return render_template('lights.html', size=size)
 
-# Третья страница
 @app.route('/<size>/<lights>')
 def electronics(size, lights):
     return render_template('electronics.html', size=size, lights=lights)
 
-# Расчет
 @app.route('/<size>/<lights>/<device>')
 def end(size, lights, device):
     result = result_calculate(int(size), int(lights), int(device))
     return render_template('end.html', result=result)
 
-# Новый маршрут для экологичной сборки
-@app.route('/<size>/<lights>/our_eco_build')
-def our_eco_build(size, lights):
-    # Добавьте логику для страницы с экологичной сборкой здесь
-    return render_template('our_eco_build.html', size=size, lights=lights)
+@app.route('/form')
+def form():
+    return render_template('form.html')
 
-# Запуск приложения в режиме отладки
-app.run(debug=True)
+@app.route('/submit', methods=['POST'])
+def submit_form():
+    name = request.form['name']
+    email = request.form['email']
+    address = request.form['address']  
+    date = request.form['date']
 
 
+    with open('form.txt', 'a') as f:
+        f.write(f"Name: {name}\n")
+        f.write(f"Email: {email}\n")
+        f.write(f"Address: {address}\n")
+        f.write(f"Date: {date}\n\n")
 
+    return render_template('form_result.html', name=name, email=email, address=address, date=date)
 
+if __name__ == '__main__':
+    app.run(debug=True)
 
-<!-- lights.html -->
+form_result.html
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
-  >
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="../static/css/style.css">
-  <title>Расчет энергоэффективности умного дома</title>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../../static/css/style.css">
+    <title>Form Submission Result</title>
 </head>
 <body>
-  <header class="header">
-    <div class="header__text">
-      <h1>Расчитай энергоэффективность своего дома!</h1>
-      <p>Реши проблему излишнего электропотребления самостоятельно!</p>
-    </div>
-  </header>
-  <main>
-    {% block content %}
-    <h2 class="main__title">Выбери освещение:</h2>
-    <ul class="list" id="list">
-      <li class="list__item">
-        <a href="{{size + '/3' }}">
-          <img class="item__img" src="../static/img/light.svg" alt="light">
-          <span>2-4 лампочки</span>
-        </a>
-      </li>
-      <!-- Задание №2 -->
-      <li class="list__item">
-        <a href="{{size + '/7' }}">
-          <img class="item__img" src="../static/img/light.svg" alt="light">
-          <span>4-6 лампочек</span>
-        </a>
-      </li>
-      <li class="list__item">
-        <a href="{{size + '/10' }}">
-          <img class="item__img" src="../static/img/light.svg" alt="light">
-          <span>8 и более</span>
-        </a>
-      </li>
-      <!-- New button for eco-friendly build -->
-      <li class="list__item">
-        <a href="{{size + '/our_eco_build' }}">
-          <img class="item__img" src="https://avatars.mds.yandex.net/i?id=42294c3c23182ea2e3b19bb7a86c59b8-5234784-images-thumbs&n=13" alt="Eco Build">
-          <span>Наша экологичная сборка</span>
-        </a>
-      </li>
-    </ul>
-    {% endblock %}
-  </main>
-  <footer>
-    <!-- Your footer content goes here -->
-  </footer>
+    <header class="header">
+        <div class="header__text">
+            <h1>Form Submission Result</h1>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h2>Form Data</h2>
+            <ul>
+                <li><strong>Name:</strong> {{ name }}</li>
+                <li><strong>Email:</strong> {{ email }}</li>
+                <li><strong>Address:</strong> {{ address }}</li>
+                <li><strong>Date of Service:</strong> {{ date }}</li>
+            </ul>
+            <a href="/form">Return to Form</a>
+        </div>
+    </main>
+    <footer>
+
+    </footer>
 </body>
 </html>
