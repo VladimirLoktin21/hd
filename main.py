@@ -40,7 +40,7 @@ async def photo(ctx):
                 return
     else:
         await ctx.send('Кажется, ты забыл прикрепить фотографии ;c')
-bot.run("MTIwMzMwMjY0Nzk0NDE4MzgyOA.GLGwt7.85RT4jfxCpaOtLMR6W1y3PjP7xXtE4y8coOQls")
+bot.run("")
 
 cl_model.py
 from keras.models import load_model  # TensorFlow is required for Keras to work
